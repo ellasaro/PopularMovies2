@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="sort_action">Sort by</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="movie_title">Movie Title</string>
+    <string name="movie_score_text">Score:</string>
+    <string name="movie_score_number">0.0</string>
+    <string name="movie_date_text">01/01/2017</string>
+    <string name="sort_by">Sort movies by:</string>
+    <string name="popularity"> Popularity</string>
+    <string name="rating"> Rating</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="trailers_titles">Trailers</string>
+    <string name="reviews_titles">Reviews</string>
+    <string name="play_trailer">Play trailer #</string>
+
+</resources>
