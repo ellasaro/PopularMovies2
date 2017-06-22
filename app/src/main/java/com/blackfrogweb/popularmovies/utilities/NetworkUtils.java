@@ -47,7 +47,7 @@ public final class NetworkUtils {
         } else
             finalUri = "http://api.themoviedb.org";
 
-
+        Log.d("Auxiliar: ", finalUri);
         Uri builtUri = Uri.parse(finalUri);
 
         URL url = null;

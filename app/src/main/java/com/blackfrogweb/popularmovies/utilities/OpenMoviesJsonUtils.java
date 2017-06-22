@@ -67,7 +67,7 @@ public final class OpenMoviesJsonUtils {
 
             //create movie object with the parsed json data
             //in this first loading instance we don't load trailers or reviews saving some time
-            MovieParcel mMovie = new MovieParcel(id, title, release_date, poster_path, vote_average, plot, null, null);
+            MovieParcel mMovie = new MovieParcel(id, title, release_date, poster_path, vote_average, plot);
 
             movieList.add(mMovie);
         }
@@ -130,5 +130,58 @@ public final class OpenMoviesJsonUtils {
         }
 
         return trailerList;
+    }
+
+    public static ArrayList<String[]> getReviewsFromJson(Context context, String moviesJsonStr)
+            throws JSONException {
+
+        final String M_RESULTS = "results";
+
+        final String M_AUTHOR = "author";
+        final String M_CONTENT = "content";
+
+        final String M_MESSAGE_CODE = "code";
+
+        JSONObject moviesJson = new JSONObject(moviesJsonStr);
+
+        if (moviesJson.has(M_MESSAGE_CODE)) {
+            int errorCode = moviesJson.getInt(M_MESSAGE_CODE);
+
+            switch (errorCode) {
+                case HttpURLConnection.HTTP_OK:
+                    break;
+                case HttpURLConnection.HTTP_NOT_FOUND:
+                    /* Location invalid */
+                    return null;
+                default:
+                    /* Server probably down */
+                    return null;
+            }
+        }
+
+        String author;
+        String review;
+
+        JSONArray reviewsArray = moviesJson.getJSONArray(M_RESULTS);
+        int length = reviewsArray.length();
+
+        ArrayList<String[]> reviewList = new ArrayList<>();
+
+        for (int i = 0; i < length; i++) {
+
+            String[] reviewItem = new String[2];
+
+            //get json movie object
+            JSONObject trailerObject = reviewsArray.getJSONObject(i);
+
+            author = trailerObject.getString(M_AUTHOR);
+            review = trailerObject.getString(M_CONTENT);
+            reviewItem[0] = author;
+            reviewItem[1] = review;
+
+            reviewList.add(reviewItem);
+        }
+
+        return reviewList;
     }
 }

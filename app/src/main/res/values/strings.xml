@@ -13,5 +13,6 @@
     <string name="trailers_titles">Trailers</string>
     <string name="reviews_titles">Reviews</string>
     <string name="play_trailer">Play trailer #</string>
+    <string name="refresh_action">Refresh</string>
 
 </resources>

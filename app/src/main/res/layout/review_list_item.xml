@@ -10,6 +10,7 @@
     android:paddingStart="20dp">
 
     <LinearLayout
+        android:id="@+id/ll_reviews_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="5dp"
@@ -31,4 +32,5 @@
             tools:text="This would be the review content" />
 
     </LinearLayout>
+
 </LinearLayout>

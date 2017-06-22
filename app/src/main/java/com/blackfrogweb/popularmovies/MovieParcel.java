@@ -16,8 +16,7 @@ public class MovieParcel implements Parcelable {
     ArrayList<String> mTrailers;
     ArrayList<String> mReviews;
 
-    public MovieParcel(String id, String title, String release, String poster, String rating, String plot,
-                       ArrayList<String> trailers, ArrayList<String> reviews)
+    public MovieParcel(String id, String title, String release, String poster, String rating, String plot)
     {
         this.mId = id;
         this.mTitle = title;
@@ -25,8 +24,6 @@ public class MovieParcel implements Parcelable {
         this.mPoster = poster;
         this.mRating = rating;
         this.mPlot = plot;
-        this.mTrailers = trailers;
-        this.mReviews = reviews;
     }
 
     private MovieParcel(Parcel in){
@@ -36,8 +33,6 @@ public class MovieParcel implements Parcelable {
         mPoster = in.readString();
         mRating = in.readString();
         mPlot = in.readString();
-        mTrailers = in.readArrayList(String.class.getClassLoader());
-        mReviews = in.readArrayList(String.class.getClassLoader());
     }
 
     @Override
@@ -55,8 +50,6 @@ public class MovieParcel implements Parcelable {
         parcel.writeString(mPoster);
         parcel.writeString(mRating);
         parcel.writeString(mPlot);
-        parcel.writeList(mTrailers);
-        parcel.writeList(mReviews);
     }
 
     public static final Parcelable.Creator<MovieParcel> CREATOR = new Parcelable.Creator<MovieParcel>() {
@@ -95,8 +88,4 @@ public class MovieParcel implements Parcelable {
     public String getmPlot() {
         return mPlot;
     }
-
-    public ArrayList<String> getmTrailers() { return mTrailers; }
-
-    public ArrayList<String> getmReviews() { return mReviews; }
 }

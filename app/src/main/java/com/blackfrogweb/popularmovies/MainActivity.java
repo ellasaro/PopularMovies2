@@ -57,20 +57,8 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d("Debug: ", "Starting things...");
-
         mErrorMessage = (TextView) findViewById(R.id.no_connection_error);
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies);
-
-        //LOADER MANAGER
-        // This ID will uniquely identify the Loader.
-        int loaderId = LIST_LOADER_ID;
-
-        //From MainActivity, we have implemented the LoaderCallbacks interface with the type of String array
-        LoaderManager.LoaderCallbacks<ArrayList<MovieParcel>> callback = MainActivity.this;
-
-        //The second parameter of the initLoader method below is a Bundle
-        Bundle bundleForLoader = new Bundle();
 
         //RECYCLER VIEW PARAMETERS
         //spanCount determines the number of columns
@@ -92,24 +80,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
         mRecyclerView.setAdapter(mMoviesAdapter);
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        //SAVED INSTANCE STATE
-        if(savedInstanceState == null) {
-            //If there is no list saved, then this is an initial state.
-            //Initialize the sort preference to most popular
-            sortPreference = "popular";
-            showDataView();
-
-            //Put the sorting preference into the bundle
-            bundleForLoader.putString("preferences", sortPreference);
-            //Load Movies
-            //Ensures a loader is initialized and active
-            getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
-        }
-        else {
-            movieList = savedInstanceState.getParcelableArrayList("movies");
-            sortPreference = savedInstanceState.getString("preferences");
-            mMoviesAdapter.setMoviesData(movieList);
-        }
+        loadMovies(savedInstanceState);
     }
 
     @Override
@@ -125,8 +96,10 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             @Override
             protected void onStartLoading() {
                 if (movieList != null) {
+                    Log.d("Auxiliar: ", "we have a list we can use");
                     deliverResult(movieList);
                 } else {
+                    Log.d("Auxiliar: ", "we need to load a new list");
                     mLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
@@ -137,7 +110,8 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
                 if(isOnline()) {
                     try {
-                        Log.d("Debug: ", "We are online.");
+                        Log.d("Auxiliar: ", "We are online.");
+                        Log.d("Auxiliar: ", "preferences inside loader " + sortPreferences);
 
                         String jsonMovieResponse = NetworkUtils
                                 .getResponseFromHttpUrl(movieRequestUrl);
@@ -149,7 +123,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
                         return movieList;
 
                     } catch (Exception e) {
-                        Log.d("POPMOVIES", "Oops!");
+                        Log.d("Auxiliar", "Oops!");
                         e.printStackTrace();
                         return null;
                     }
@@ -247,8 +221,12 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
                         sortPreference = "";
                     }
 
-                    //loadMovies(sortPreference);
+                    movieList = null;
 
+                    Bundle preferenceBundle = new Bundle();
+                    preferenceBundle.putString("preferences", sortPreference);
+
+                    loadMovies(preferenceBundle);
                 }
             })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -260,8 +238,53 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
             AlertDialog alertDialog = dialogBuilder.create();
             alertDialog.show();
+        } else if(id == R.id.refresh){
+            Bundle refreshBundle = new Bundle();
+            refreshBundle.putString("preferences", sortPreference);
+            //clear the movie list
+            movieList = null;
+            loadMovies(refreshBundle);
         }
         return true;
+    }
+
+    private void loadMovies(Bundle bundle){
+        Log.d("Auxiliar: ", "loadMovies");
+        //LOADER MANAGER
+        // This ID will uniquely identify the Loader.
+        final int loaderId = LIST_LOADER_ID;
+        //The second parameter of the initLoader method below is a Bundle
+        Bundle bundleForLoader = new Bundle();
+        //From MainActivity, we have implemented the LoaderCallbacks interface with the type of String array
+        LoaderManager.LoaderCallbacks<ArrayList<MovieParcel>> callback = MainActivity.this;
+
+        //SAVED INSTANCE STATE
+        if(bundle == null) {
+            //If there is no list saved, then this is an initial state.
+            //Initialize the sort preference to most popular
+            sortPreference = "popular";
+            showDataView();
+
+            //Put the sorting preference into the bundle
+            bundleForLoader.putString("preferences", sortPreference);
+            //Load Movies
+            //Ensures a loader is initialized and active
+            getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+        }
+        else {
+            sortPreference = bundle.getString("preferences");
+            Log.d("Auxiliar: ", "current preference is " + sortPreference);
+
+            if(movieList == null){
+                Log.d("Auxiliar: ", "movie list is null");
+                showDataView();
+                bundleForLoader.putString("preferences", sortPreference);
+                getSupportLoaderManager().restartLoader(loaderId, bundleForLoader, callback);
+            } else {
+                movieList = bundle.getParcelableArrayList("movies");
+                mMoviesAdapter.setMoviesData(movieList);
+            }
+        }
     }
 
     //Save state

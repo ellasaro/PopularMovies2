@@ -49,8 +49,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
             ArrayList<String> movieReviews = mMoviesData.get(adapterPosition).mReviews;
 
             //create parcelable and send it in the intent
-            MovieParcel movieClicked = new MovieParcel(movieId, movieName, movieDate, moviePoster, movieRating, moviePlot,
-                                                                        movieTrailers, movieReviews);
+            MovieParcel movieClicked = new MovieParcel(movieId, movieName, movieDate, moviePoster, movieRating, moviePlot);
             mClickHandler.onClick(movieClicked);
         }
     }

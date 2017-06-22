@@ -1,11 +1,14 @@
 package com.blackfrogweb.popularmovies;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -15,33 +18,19 @@ import java.util.ArrayList;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 
-    private ArrayList<String> mReviewData;
-    private final ReviewAdapterOnClickHandler mClickHandler;
+    private Bundle mReviewData;
+    private ArrayList<String> authorReviewList;
+    private ArrayList<String> contentReviewList;
 
-    public interface ReviewAdapterOnClickHandler {
-        void onClick(String trailerClicked);
-    }
+    public class ReviewAdapterViewHolder extends RecyclerView.ViewHolder {
 
-    public ReviewAdapter(ReviewAdapterOnClickHandler clickHandler) {
-        mClickHandler = clickHandler;
-    }
-
-    public class ReviewAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-
-        public final TextView mReviewNumber;
+        private final TextView mReviewAuthor;
+        private final TextView mReviewContent;
 
         public ReviewAdapterViewHolder(View view) {
             super(view);
-            mReviewNumber = (TextView) view.findViewById(R.id.tv_trailer_number);
-            view.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-
-            int adapterPosition = getAdapterPosition();
-            String trailerClicked = mReviewData.get(adapterPosition);
-            mClickHandler.onClick(trailerClicked);
+            mReviewAuthor = (TextView) view.findViewById(R.id.tv_review_author);
+            mReviewContent = (TextView) view.findViewById(R.id.tv_review_content);
         }
     }
 
@@ -49,7 +38,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
     public ReviewAdapter.ReviewAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
 
         Context context = viewGroup.getContext();
-        int layoutIdForListItem = R.layout.trailer_list_item;
+        int layoutIdForListItem = R.layout.review_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View view = inflater.inflate(layoutIdForListItem, viewGroup, false);
@@ -58,17 +47,20 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
 
     @Override
     public void onBindViewHolder(ReviewAdapter.ReviewAdapterViewHolder trailerHolder, int position) {
-        trailerHolder.mReviewNumber.setText(Integer.toString(position+1));
+        trailerHolder.mReviewAuthor.setText(authorReviewList.get(position));
+        trailerHolder.mReviewContent.setText(contentReviewList.get(position));
     }
 
     @Override
     public int getItemCount() {
         if (null == mReviewData) return 0;
-        return mReviewData.size();
+        authorReviewList = mReviewData.getStringArrayList("Review Authors");
+        contentReviewList = mReviewData.getStringArrayList("Review Contents");
+        return authorReviewList.size();
     }
 
-    public void setReviewData(ArrayList<String> trailerList) {
-        mReviewData = trailerList;
+    public void setReviewData(Bundle reviewBundle) {
+        mReviewData = reviewBundle;
         notifyDataSetChanged();
     }
 }

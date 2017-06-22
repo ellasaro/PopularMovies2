@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingComponent;
 import android.databinding.DataBindingUtil;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -35,21 +36,26 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler, LoaderManager.LoaderCallbacks<ArrayList<String>>{
+public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
+                                                                LoaderManager.LoaderCallbacks<Bundle>{
 
+    //Recycler views
     private RecyclerView mRecyclerView;
     private TrailerAdapter mTrailerAdapter;
+    private RecyclerView mrRecyclerView;
+    private ReviewAdapter mReviewAdapter;
+    //loader variables
     private static final int TRAILERS_LOADER_ID = 1;
     private static final int REVIEWS_LOADER_ID = 2;
     int loaderId;
     ArrayList<String> trailerList = new ArrayList<String>();
-    ArrayList<String> reviewList = new ArrayList<String>();
     private MovieParcel passedMovie;
 
     //private ProgressBar mLoadingIndicator;
@@ -57,20 +63,27 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     private TextView mReleaseDate;
     private TextView mScore;
     private TextView mPlot;
+    private ImageView moviePoster;
+    private TextView mNoTrailers;
+    private TextView mNoReviews;
+    private TextView mNoInternetTrailers;
+    private TextView mNoInternetReviews;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        //TODO remove this
-        //mBinding = DataBindingUtil.setContentView(this, R.layout.activity_detail);
 
-        ImageView moviePoster = (ImageView) findViewById(R.id.movie_poster);
-        TextView mMovieTitle = (TextView) findViewById(R.id.movie_title);
-        TextView mReleaseDate = (TextView) findViewById(R.id.release_date);
-        TextView mScore = (TextView) findViewById(R.id.score);
-        TextView mPlot = (TextView) findViewById(R.id.plot);
+        moviePoster = (ImageView) findViewById(R.id.movie_poster);
+        mMovieTitle = (TextView) findViewById(R.id.movie_title);
+        mReleaseDate = (TextView) findViewById(R.id.release_date);
+        mScore = (TextView) findViewById(R.id.score);
+        mPlot = (TextView) findViewById(R.id.plot);
+        mNoTrailers = (TextView) findViewById(R.id.tv_no_trailers);
+        mNoReviews = (TextView) findViewById(R.id.tv_no_reviews);
+        mNoInternetTrailers = (TextView) findViewById(R.id.tv_no_internet_trailers);
+        mNoInternetReviews = (TextView) findViewById(R.id.tv_no_internet_reviews);
 
         //get intent and movie object
         Intent intent = getIntent();
@@ -108,12 +121,22 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         //Trailers Recyclerview
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_trailers);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(layoutManager);
+        LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(trailerLayoutManager);
         mRecyclerView.setHasFixedSize(true);
 
         mTrailerAdapter = new TrailerAdapter(this);
         mRecyclerView.setAdapter(mTrailerAdapter);
+
+        //Reviews Recyclerview
+        mrRecyclerView = (RecyclerView) findViewById(R.id.rv_reviews);
+
+        LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mrRecyclerView.setLayoutManager(reviewLayoutManager);
+        mrRecyclerView.setHasFixedSize(true);
+
+        mReviewAdapter = new ReviewAdapter();
+        mrRecyclerView.setAdapter(mReviewAdapter);
 
         //if we never loaded the trailer list for this movie, do it now
         if(true) {
@@ -123,10 +146,15 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             bundleForLoader.putString("preferences", id);
             //Load Trailers
             loaderId = TRAILERS_LOADER_ID;
-            //From MainActivity, we have implemented the LoaderCallbacks interface with the type of String array
-            LoaderManager.LoaderCallbacks<ArrayList<String>> callback = DetailActivity.this;
+            //we've implemented the LoaderCallbacks interface with the type of String array
+            LoaderManager.LoaderCallbacks<Bundle> callbackTrailers = DetailActivity.this;
             //Ensures a loader is initialized and active
-            getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+            getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackTrailers);
+
+            loaderId = REVIEWS_LOADER_ID;
+            //we've implemented the LoaderCallbacks interface with the type of String array
+            LoaderManager.LoaderCallbacks<Bundle> callbackReviews = DetailActivity.this;
+            getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackReviews);
         } else{
             //fill the recycler view with the existing data
             Log.d("Auxiliar: ", "we already have these trailers.");
@@ -152,87 +180,138 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     }
 
     @Override
-    public Loader<ArrayList<String>> onCreateLoader(int id, final Bundle args) {
-        return new AsyncTaskLoader<ArrayList<String>>(this) {
+    public Loader<Bundle> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<Bundle>(this) {
 
             //get the sorting preferences
             String sortPreferences = args.getString("preferences");
 
-            //Build URL requesting movie list
-            URL trailersRequestUrl = NetworkUtils.buildUrl(sortPreferences, "trailers");
-
-            URL reviewsRequestUrl = NetworkUtils.buildUrl(sortPreferences, "reviews");
-
-            ArrayList<String> loaderList = new ArrayList<>();
+            //Bundle and array lists we'll use for operating
+            Bundle result = new Bundle();
+            ArrayList<String> trailerList = new ArrayList<>();
+            ArrayList<String[]> reviewList = new ArrayList<>();
+            ArrayList<String> reviewAuthorList = new ArrayList<>();
+            ArrayList<String> reviewContentList = new ArrayList<>();
 
             @Override
             protected void onStartLoading() {
-                forceLoad();
+                //if there is no connection, don't even start loading
+                if(isOnline()){
+                    forceLoad();
+                }else{
+                    showNoConnection();
+                }
             }
 
             @Override
-            public ArrayList<String> loadInBackground() {
+            public Bundle loadInBackground() {
 
-                Log.d("Auxiliar: ", "loadInBackground");
-                if(isOnline()) {
+                if (getId() == TRAILERS_LOADER_ID) {
                     try {
-                        Log.d("Auxiliar: ", "We are online.");
-
+                        //Build URL
+                        URL trailersRequestUrl = NetworkUtils.buildUrl(sortPreferences, "trailers");
+                        //Get trailer info
                         String jsonMovieResponse = NetworkUtils
                                 .getResponseFromHttpUrl(trailersRequestUrl);
 
-                        //Array with movie objects
-                        loaderList = OpenMoviesJsonUtils
+                        //Array with parsed movie objects
+                        trailerList = OpenMoviesJsonUtils
                                 .getTrailersFromJson(DetailActivity.this, jsonMovieResponse);
 
-                        return loaderList;
+                        if (trailerList != null) {
+                            showTrailers();
+                            //put the trailer String Array List into a bundle
+                            result.putStringArrayList("Trailer List", trailerList);
+                        } else {
+                            //if the list comes back empty, tell the user
+                            showNoTrailers();
+                        }
+                        return result;
 
                     } catch (Exception e) {
-                        Log.d("POPMOVIES", "Oops!");
+                        e.printStackTrace();
+                        return null;
+                    }
+                } else if (getId() == REVIEWS_LOADER_ID) {
+                    try {
+                        //Build URL
+                        URL reviewsRequestUrl = NetworkUtils.buildUrl(sortPreferences, "reviews");
+
+                        Log.d("Auxiliar: ", "Getting reviews.");
+
+                        String jsonMovieResponse = NetworkUtils
+                                .getResponseFromHttpUrl(reviewsRequestUrl);
+
+                        //Array with movie objects
+                        reviewList = OpenMoviesJsonUtils
+                                .getReviewsFromJson(DetailActivity.this, jsonMovieResponse);
+
+                        //Separate authors and reviews from the ArrayList of String arrays
+                        if (reviewList != null) {
+                            showReviews();
+                            for (int i = 0; i < reviewList.size(); i++) {
+                                String[] auxiliarList = reviewList.get(i);
+                                reviewAuthorList.add(auxiliarList[0]);
+                                reviewContentList.add(auxiliarList[1]);
+                            }
+                        } else {
+                            //reviewList came back empty, tell the user
+                            showNoReviews();
+                        }
+                        //put those arrays into a bundle and return it
+                        result.putStringArrayList("Review Authors", reviewAuthorList);
+                        result.putStringArrayList("Review Contents", reviewContentList);
+                        return result;
+
+                    } catch (Exception e) {
                         e.printStackTrace();
                         return null;
                     }
                 } else {
+                    //the loader id is neither 1 or 2
                     return null;
                 }
             }
 
-            public void deliverResult(ArrayList<String> data) {
-                loaderList = data;
-                super.deliverResult(data);
+            public void deliverResult(Bundle loaderResult) {
+                result = loaderResult;
+                super.deliverResult(result);
             }
         };
     }
 
     @Override
-    public void onLoadFinished(Loader<ArrayList<String>> loader, ArrayList<String> loaderList) {
-        Log.d("Auxiliar: ", "Finished loading trailers.");
-
+    public void onLoadFinished(Loader<Bundle> loader, Bundle loaderResult) {
+        //get the id of the loader that finished
         int finishedLoaderId = loader.getId();
 
-        passedMovie.mTrailers = loaderList;
-
         if (finishedLoaderId == 1) {
+            ArrayList<String> trailerList = loaderResult.getStringArrayList("Trailer List");
             //mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (loaderList != null) {
-                //showDataView();
-                Log.d("Auxiliar: ", "Populate view.");
-                mTrailerAdapter.setTrailerData(loaderList);
+            if (trailerList != null) {
+                //populate recycler view
+                mTrailerAdapter.setTrailerData(trailerList);
             } else {
-                //showErrorMessage();
+                showNoTrailers();
+            }
+        } else if(finishedLoaderId == 2){
+            if(loaderResult != null) {
+                //populate recycler view
+                mReviewAdapter.setReviewData(loaderResult);
+            } else {
+                showNoReviews();
             }
         }
     }
 
     @Override
-    public void onLoaderReset(Loader<ArrayList<String>> loader) {
+    public void onLoaderReset(Loader<Bundle> loader) {
         //required to Override it to implement the LoaderCallbacks<String> interface
     }
 
     @Override
     public void onClick(String trailerClicked) {
         Context context = this;
-        //Toast.makeText(context, "Play " + trailerClicked, Toast.LENGTH_SHORT).show();
         playTrailer(trailerClicked);
     }
 
@@ -250,5 +329,40 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         if(intent.resolveActivity(getPackageManager()) != null){
             startActivity(intent);
         }
+    }
+
+    private void showTrailers(){
+        mRecyclerView.setVisibility(View.VISIBLE);
+        mNoTrailers.setVisibility(View.GONE);
+        mNoInternetReviews.setVisibility(View.GONE);
+        mNoInternetTrailers.setVisibility(View.GONE);
+    }
+
+    private void showReviews(){
+        mrRecyclerView.setVisibility(View.VISIBLE);
+        mNoReviews.setVisibility(View.GONE);
+        mNoInternetReviews.setVisibility(View.GONE);
+        mNoInternetTrailers.setVisibility(View.GONE);
+    }
+
+    private void showNoTrailers(){
+        mRecyclerView.setVisibility(View.GONE);
+        mNoTrailers.setVisibility(View.VISIBLE);
+        mNoInternetReviews.setVisibility(View.GONE);
+        mNoInternetTrailers.setVisibility(View.GONE);
+    }
+
+    private void showNoReviews(){
+        mrRecyclerView.setVisibility(View.GONE);
+        mNoReviews.setVisibility(View.VISIBLE);
+        mNoInternetReviews.setVisibility(View.GONE);
+        mNoInternetTrailers.setVisibility(View.GONE);
+    }
+
+    private void showNoConnection(){
+        mrRecyclerView.setVisibility(View.GONE);
+        mNoReviews.setVisibility(View.GONE);
+        mNoInternetReviews.setVisibility(View.VISIBLE);
+        mNoInternetTrailers.setVisibility(View.VISIBLE);
     }
 }

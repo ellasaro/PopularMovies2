@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerAdapterViewHolder> {
 
     private ArrayList<String> mTrailerData;
+    private int dataSize;
     private final TrailerAdapterOnClickHandler mClickHandler;
 
     public interface TrailerAdapterOnClickHandler {
@@ -28,7 +29,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerA
 
     public class TrailerAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        public final TextView mTrailerNumber;
+        private final TextView mTrailerNumber;
 
         public TrailerAdapterViewHolder(View view) {
             super(view);
@@ -58,7 +59,8 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerA
 
     @Override
     public void onBindViewHolder(TrailerAdapter.TrailerAdapterViewHolder trailerHolder, int position) {
-        trailerHolder.mTrailerNumber.setText(Integer.toString(position+1));
+
+        trailerHolder.mTrailerNumber.setText(Integer.toString(position + 1));
     }
 
     @Override
