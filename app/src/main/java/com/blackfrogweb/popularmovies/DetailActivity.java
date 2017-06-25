@@ -264,8 +264,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             protected void onStartLoading() {
                 //if there is no connection, don't even start loading
                 if (isOnline()) {
-                    mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
-                    mReviewLoadingIndicator.setVisibility(View.VISIBLE);
+                    showProgressBars();
                     forceLoad();
                 } else {
                     showNoConnection();
@@ -353,8 +352,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         //get the id of the loader that finished
         int finishedLoaderId = loader.getId();
 
-        mTrailerLoadingIndicator.setVisibility(View.GONE);
-        mReviewLoadingIndicator.setVisibility(View.GONE);
+        hideProgressBars();
 
         if (finishedLoaderId == 1) {
             ArrayList<String> trailerList = loaderResult.getStringArrayList("Trailer List");
@@ -392,14 +390,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
         if (id == android.R.id.home) {
             finish();
+        } else {
+            super.onOptionsItemSelected(item);
         }
         return true;
-    }
-
-    @Override
-    protected void onResume() {
-        hideProgressBars();
-        super.onResume();
     }
 
     //Check for internet connection
@@ -466,6 +460,11 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         mNoReviews.setVisibility(View.GONE);
         mNoInternetReviews.setVisibility(View.VISIBLE);
         mNoInternetTrailers.setVisibility(View.VISIBLE);
+    }
+
+    private void showProgressBars(){
+        mReviewLoadingIndicator.setVisibility(View.VISIBLE);
+        mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
     }
 
     private void hideProgressBars(){
