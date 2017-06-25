@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Popular Movies</string>
     <string name="sort_action">Sort by</string>
-    <string name="no_internet_connection">No internet connection</string>
+    <string name="no_internet_connection">No internet connection :(</string>
     <string name="movie_title">Movie Title</string>
     <string name="movie_score_text">Score:</string>
     <string name="movie_score_number">0.0</string>
@@ -14,5 +14,14 @@
     <string name="reviews_titles">Reviews</string>
     <string name="play_trailer">Play trailer #</string>
     <string name="refresh_action">Refresh</string>
+    <string name="favorites">Favorites</string>
+    <string name="no_trailers">Sorry, no trailers available :(</string>
+    <string name="no_reviews">Sorry, no reviews available :(</string>
+    <string name="image_poster">Image poster</string>
+    <string name="all_movies">All movies</string>
+    <string name="remove">Remove from Favorites</string>
+    <string name="no_favorites">Your Favorites list is empty</string>
+    <string name="clear_data">Clear data</string>
+    <string name="dialog_clear_data">Are you sure you want to delete all data from Favorites?</string>
 
 </resources>

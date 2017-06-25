@@ -1,27 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    tools:context=".FavoritesActivity">
 
     <item
-        android:id="@+id/favorites"
+        android:id="@+id/all_movies"
         android:showAsAction="never"
         android:orderInCategory="1"
-        android:title="@string/favorites"
+        android:title="@string/all_movies"
         tools:ignore="AppCompatResource"/>
 
     <item
-        android:id="@+id/sortBy"
+        android:id="@+id/clear_data"
         android:showAsAction="never"
         android:orderInCategory="2"
-        android:title="@string/sort_action"
-        tools:ignore="AppCompatResource"/>
-
-    <item
-        android:id="@+id/refresh"
-        android:showAsAction="never"
-        android:orderInCategory="3"
-        android:title="@string/refresh_action"
+        android:title="@string/clear_data"
         tools:ignore="AppCompatResource"/>
 
 </menu>

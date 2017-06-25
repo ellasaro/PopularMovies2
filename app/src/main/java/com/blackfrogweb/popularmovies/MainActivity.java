@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -141,8 +140,6 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
     @Override
     public void onLoadFinished(Loader<ArrayList<MovieParcel>> loader, ArrayList<MovieParcel> movieList) {
-        Log.d("Auxiliar: ", "Finished loading movies.");
-
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (movieList != null) {
             showDataView();
@@ -244,6 +241,11 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             //clear the movie list
             movieList = null;
             loadMovies(refreshBundle);
+        } else if(id == R.id.favorites){
+            Context context = this;
+            Class destinationClass = FavoritesActivity.class;
+            Intent intentFavoritesActivity = new Intent(context, destinationClass);
+            startActivity(intentFavoritesActivity);
         }
         return true;
     }

@@ -3,33 +3,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="#797979"
     android:orientation="vertical"
-    android:paddingEnd="20dp"
-    android:paddingLeft="20dp"
-    android:paddingRight="20dp"
-    android:paddingStart="20dp">
+    android:paddingEnd="0dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingStart="0dp">
 
     <LinearLayout
         android:id="@+id/ll_reviews_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
-        android:orientation="vertical">
+        android:layout_marginBottom="0dp"
+        android:layout_marginTop="0dp"
+        android:background="?android:attr/colorBackground"
+        android:orientation="vertical"
+        android:paddingEnd="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingStart="10dp"
+        android:paddingTop="10dp">
 
         <TextView
             android:id="@+id/tv_review_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textSize="16sp"
+            android:textSize="14sp"
             tools:text="Author" />
 
         <TextView
             android:id="@+id/tv_review_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:layout_marginBottom="10dp"
+            android:textSize="14sp"
             tools:text="This would be the review content" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#696969" />
 
     </LinearLayout>
 
