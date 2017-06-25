@@ -92,7 +92,6 @@ public class FavoritesActivity extends FragmentActivity implements FavoritesAdap
 
         /* Setting the adapter attaches it to the RecyclerView in our layout. */
         mRecyclerView.setAdapter(mFavoritesAdapter);
-        cursor.close();
     }
 
     @Override
@@ -151,5 +150,11 @@ public class FavoritesActivity extends FragmentActivity implements FavoritesAdap
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
         intentToStartDetailActivity.putExtra("movie", movieClicked);
         startActivity(intentToStartDetailActivity);
+    }
+
+    @Override
+    protected void onResume() {
+        loadFavorites(new Bundle());
+        super.onResume();
     }
 }

@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.databinding.DataBindingComponent;
-import android.databinding.DataBindingUtil;
 import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -16,25 +14,22 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.blackfrogweb.popularmovies.data.FavoritesContract;
 import com.blackfrogweb.popularmovies.data.FavoritesDbHelper;
-import com.blackfrogweb.popularmovies.databinding.ActivityDetailBinding;
 import com.blackfrogweb.popularmovies.utilities.NetworkUtils;
 import com.blackfrogweb.popularmovies.utilities.OpenMoviesJsonUtils;
 import com.squareup.picasso.Picasso;
@@ -49,7 +44,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
-                                                                LoaderManager.LoaderCallbacks<Bundle>{
+                                                                LoaderManager.LoaderCallbacks<Bundle> {
 
     //Recycler views
     private RecyclerView mRecyclerView;
@@ -113,7 +108,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
         //fetch whether the movie is a favorite or not
         mStatus = isFavorite(id);
-        if(mStatus) mAddRemoveBttn.setText(R.string.remove);
+        if (mStatus) mAddRemoveBttn.setText(R.string.remove);
 
         //set the button on click listener
         mAddRemoveBttn.setOnClickListener(new View.OnClickListener() {
@@ -192,20 +187,30 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         //The second parameter of the initLoader method below is a Bundle
         Bundle bundleForLoader = new Bundle();
         bundleForLoader.putString("preferences", id);
+
         //Load Trailers
+        loadTrailers(bundleForLoader);
+        //Load Reviews
+        loadReviews(bundleForLoader);
+    }
+
+    private void loadTrailers(Bundle bundleForLoader){
+
         loaderId = TRAILERS_LOADER_ID;
         //we've implemented the LoaderCallbacks interface with the type of String array
         LoaderManager.LoaderCallbacks<Bundle> callbackTrailers = DetailActivity.this;
         //Ensures a loader is initialized and active
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackTrailers);
+    }
 
+    private void loadReviews(Bundle bundleForLoader){
         loaderId = REVIEWS_LOADER_ID;
         //we've implemented the LoaderCallbacks interface with the type of String array
         LoaderManager.LoaderCallbacks<Bundle> callbackReviews = DetailActivity.this;
         getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackReviews);
     }
 
-    private boolean isFavorite(String movieId){
+    private boolean isFavorite(String movieId) {
 
         boolean status = false;
 
@@ -213,7 +218,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                 FavoritesContract.FavoritesEntry.TABLE_NAME,
                 null,
                 "api_id=?",
-                new String[] { movieId },
+                new String[]{movieId},
                 null,
                 null,
                 null);
@@ -224,7 +229,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         return status;
     }
 
-    private long addFavorite(MovieParcel currentMovie){
+    private long addFavorite(MovieParcel currentMovie) {
         ContentValues cv = new ContentValues();
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_API_ID, currentMovie.getmId());
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_TITLE, currentMovie.getmTitle());
@@ -236,7 +241,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         return mDb.insert(FavoritesContract.FavoritesEntry.TABLE_NAME, null, cv);
     }
 
-    private boolean removeFavorite(MovieParcel currentMovie){
+    private boolean removeFavorite(MovieParcel currentMovie) {
         return mDb.delete(FavoritesContract.FavoritesEntry.TABLE_NAME,
                 FavoritesContract.FavoritesEntry.COLUMN_API_ID + "=" + currentMovie.getmId(), null) > 0;
     }
@@ -258,11 +263,11 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             @Override
             protected void onStartLoading() {
                 //if there is no connection, don't even start loading
-                if(isOnline()){
+                if (isOnline()) {
                     mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
                     mReviewLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
-                }else{
+                } else {
                     showNoConnection();
                 }
             }
@@ -301,8 +306,6 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                         //Build URL
                         URL reviewsRequestUrl = NetworkUtils.buildUrl(sortPreferences, "reviews");
 
-                        Log.d("Auxiliar: ", "Getting reviews.");
-
                         String jsonMovieResponse = NetworkUtils
                                 .getResponseFromHttpUrl(reviewsRequestUrl);
 
@@ -319,8 +322,6 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                                 reviewContentList.add(auxiliarList[1]);
                             }
                         } else {
-                            //reviewList came back empty, tell the user
-                            Log.d("Auxiliar: ", "list empty (" + reviewList.size() + ")");
                             showNoReviews();
                         }
                         //put those arrays into a bundle and return it
@@ -339,8 +340,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             }
 
             public void deliverResult(Bundle loaderResult) {
-                result = loaderResult;
-                super.deliverResult(result);
+                if(loaderResult != null) {
+                    result = loaderResult;
+                    super.deliverResult(result);
+                }
             }
         };
     }
@@ -362,8 +365,8 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             } else {
                 showNoTrailers();
             }
-        } else if(finishedLoaderId == 2){
-            if(loaderResult != null) {
+        } else if (finishedLoaderId == 2) {
+            if (loaderResult != null) {
                 //populate recycler view
                 mReviewAdapter.setReviewData(loaderResult);
             } else {
@@ -380,6 +383,23 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     @Override
     public void onClick(String trailerClicked) {
         playTrailer(trailerClicked);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            finish();
+        }
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        hideProgressBars();
+        super.onResume();
     }
 
     //Check for internet connection
@@ -447,4 +467,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         mNoInternetReviews.setVisibility(View.VISIBLE);
         mNoInternetTrailers.setVisibility(View.VISIBLE);
     }
+
+    private void hideProgressBars(){
+        mReviewLoadingIndicator.setVisibility(View.GONE);
+        mTrailerLoadingIndicator.setVisibility(View.GONE);
+    }
+
 }
