@@ -35,6 +35,7 @@ public class FavoritesActivity extends FragmentActivity implements FavoritesAdap
     private FavoritesAdapter mFavoritesAdapter;
 
     private SQLiteDatabase mDb;
+    private Cursor cursor;
 
     private TextView mNoFavoritesMessage;
     private ArrayList<MovieParcel> movieList;
@@ -83,7 +84,7 @@ public class FavoritesActivity extends FragmentActivity implements FavoritesAdap
     private void loadFavorites(Bundle bundle){
 
         //get favorites from DB
-        Cursor cursor = getFavorites();
+        cursor = getFavorites();
 
         if(cursor.getCount() == 0) mNoFavoritesMessage.setVisibility(View.VISIBLE);
         else mNoFavoritesMessage.setVisibility(View.GONE);
@@ -156,5 +157,11 @@ public class FavoritesActivity extends FragmentActivity implements FavoritesAdap
     protected void onResume() {
         loadFavorites(new Bundle());
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        cursor.close();
+        super.onDestroy();
     }
 }

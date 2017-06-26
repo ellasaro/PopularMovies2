@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#ff4081</color>
     <color name="secondaryText">#dedede</color>
     <color name="separator">#f7ff84</color>
     <color name="shadow">#d6d6d6</color>
