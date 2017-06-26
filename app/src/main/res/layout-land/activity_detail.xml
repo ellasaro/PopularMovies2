@@ -25,40 +25,40 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <FrameLayout
+                <android.support.constraint.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|center_horizontal"
                     android:layout_weight="1">
 
-                    <LinearLayout
+                    <ImageView
+                        android:id="@+id/movie_poster"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical|center_horizontal"
-                        android:orientation="vertical">
+                        app:layout_constraintLeft_toRightOf="parent"
+                        app:layout_constraintRight_toLeftOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="ContentDescription"
+                        tools:layout_editor_absoluteX="16dp"
+                        tools:layout_editor_absoluteY="89dp" />
 
-                        <ImageView
-                            android:id="@+id/movie_poster"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical|center_horizontal"
-                            android:layout_weight="1"
-                            tools:ignore="ContentDescription" />
+                    <Button
+                        android:id="@+id/bttnSaveFavorite"
+                        style="@style/Widget.AppCompat.Button"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/green_button"
+                        android:text="@string/add_to_favorites"
+                        android:textAppearance="@style/ButtonText"
+                        android:textSize="16sp"
+                        app:layout_constraintLeft_toRightOf="@id/movie_poster"
+                        app:layout_constraintRight_toLeftOf="@id/movie_poster"
+                        app:layout_constraintTop_toBottomOf="@id/movie_poster"
+                        tools:layout_editor_absoluteX="8dp"
+                        tools:layout_editor_absoluteY="89dp" />
 
-                        <Button
-                            android:id="@+id/bttnSaveFavorite"
-                            style="@style/Widget.AppCompat.Button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/green_button"
-                            android:text="@string/add_to_favorites"
-                            android:textAppearance="@style/ButtonText"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-
-                </FrameLayout>
+                </android.support.constraint.ConstraintLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
