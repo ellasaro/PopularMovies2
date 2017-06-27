@@ -43,6 +43,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
                                                                 LoaderManager.LoaderCallbacks<Bundle> {
 
@@ -62,17 +65,19 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     private ProgressBar mTrailerLoadingIndicator;
     private ProgressBar mReviewLoadingIndicator;
 
-    //private ProgressBar mLoadingIndicator;
-    private TextView mMovieTitle;
-    private TextView mReleaseDate;
-    private TextView mScore;
-    private TextView mPlot;
-    private ImageView moviePoster;
-    private TextView mNoTrailers;
-    private TextView mNoReviews;
-    private TextView mNoInternetTrailers;
-    private TextView mNoInternetReviews;
-    private Button mAddRemoveBttn;
+    //movie information
+    @BindView(R.id.movie_title) TextView mMovieTitle;
+    @BindView(R.id.release_date) TextView mReleaseDate;
+    @BindView(R.id.score) TextView mScore;
+    @BindView(R.id.tv_no_trailers) TextView mNoTrailers;
+    @BindView(R.id.tv_no_reviews) TextView mNoReviews;
+    @BindView(R.id.tv_no_internet_trailers) TextView mNoInternetTrailers;
+    @BindView(R.id.tv_no_internet_reviews) TextView mNoInternetReviews;
+    @BindView(R.id.bttnSaveFavorite) TextView mAddRemoveBttn;
+    @BindView(R.id.plot) TextView mPlot;
+    @BindView(R.id.movie_poster) ImageView moviePoster;
+    @BindView(R.id.trailer_loading_indicator) ProgressBar getmTrailerLoadingIndicator;
+    @BindView(R.id.review_loading_indicator) ProgressBar getmReviewLoadingIndicator;
 
     //DB
     private SQLiteDatabase mDb;
@@ -82,19 +87,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        ButterKnife.bind(this);
 
-        moviePoster = (ImageView) findViewById(R.id.movie_poster);
-        mMovieTitle = (TextView) findViewById(R.id.movie_title);
-        mReleaseDate = (TextView) findViewById(R.id.release_date);
-        mScore = (TextView) findViewById(R.id.score);
-        mPlot = (TextView) findViewById(R.id.plot);
-        mNoTrailers = (TextView) findViewById(R.id.tv_no_trailers);
-        mNoReviews = (TextView) findViewById(R.id.tv_no_reviews);
-        mNoInternetTrailers = (TextView) findViewById(R.id.tv_no_internet_trailers);
-        mNoInternetReviews = (TextView) findViewById(R.id.tv_no_internet_reviews);
         mTrailerLoadingIndicator = (ProgressBar) findViewById(R.id.trailer_loading_indicator);
         mReviewLoadingIndicator = (ProgressBar) findViewById(R.id.review_loading_indicator);
-        mAddRemoveBttn = (Button) findViewById(R.id.bttnSaveFavorite);
 
         FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
         mDb = dbHelper.getWritableDatabase();

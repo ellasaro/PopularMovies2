@@ -25,40 +25,38 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <android.support.constraint.ConstraintLayout
+                <FrameLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="top|center_horizontal"
                     android:layout_weight="1">
 
-                    <ImageView
-                        android:id="@+id/movie_poster"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:layout_constraintLeft_toRightOf="parent"
-                        app:layout_constraintRight_toLeftOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:ignore="ContentDescription"
-                        tools:layout_editor_absoluteX="16dp"
-                        tools:layout_editor_absoluteY="89dp" />
+                        android:layout_gravity="top|center_horizontal"
+                        android:orientation="vertical">
 
-                    <Button
-                        android:id="@+id/bttnSaveFavorite"
-                        style="@style/Widget.AppCompat.Button"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/green_button"
-                        android:text="@string/add_to_favorites"
-                        android:textAppearance="@style/ButtonText"
-                        android:textSize="16sp"
-                        app:layout_constraintLeft_toRightOf="@id/movie_poster"
-                        app:layout_constraintRight_toLeftOf="@id/movie_poster"
-                        app:layout_constraintTop_toBottomOf="@id/movie_poster"
-                        tools:layout_editor_absoluteX="8dp"
-                        tools:layout_editor_absoluteY="89dp" />
+                        <ImageView
+                            android:id="@+id/movie_poster"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:ignore="ContentDescription" />
 
-                </android.support.constraint.ConstraintLayout>
+                        <Button
+                            android:id="@+id/bttnSaveFavorite"
+                            style="@style/Widget.AppCompat.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/green_button"
+                            android:text="@string/add_to_favorites"
+                            android:textAppearance="@style/ButtonText"
+                            android:textSize="16sp" />
+
+                    </LinearLayout>
+
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -242,8 +240,9 @@
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/rv_reviews"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp" />
+                            android:layout_height="200dp"
+                            android:layout_marginStart="10dp"
+                            android:scrollbars="vertical" />
 
                         <TextView
                             android:id="@+id/tv_no_reviews"
