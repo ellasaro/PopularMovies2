@@ -171,6 +171,12 @@
                 android:layout_marginBottom="5dp"
                 android:background="@color/separator" />
 
+            <LinearLayout
+                android:orientation="vertical"
+                android:id="@+id/trailerListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
             <ProgressBar
                 android:id="@+id/trailer_loading_indicator"
                 android:layout_width="42dp"

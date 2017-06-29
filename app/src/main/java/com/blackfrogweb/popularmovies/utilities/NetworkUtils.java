@@ -27,8 +27,8 @@ public final class NetworkUtils {
     private static final String MOVIES_URL_REVIEWS = "/reviews";
 
     //TODO your key HERE
-    private static final String KEY =
-            "e5fc68f7a3a809e8b9319d65c03ade62";
+    private static final String KEY ="";
+
 
     private static final String URL_LIST = "list";
     private static final String URL_TRAILERS = "trailers";

@@ -22,8 +22,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +47,8 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static java.security.AccessController.getContext;
 
 public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
                                                                 LoaderManager.LoaderCallbacks<Bundle> {
@@ -88,6 +92,8 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
+
+        Log.d("Auxiliar: ", "onCreate");
 
         mTrailerLoadingIndicator = (ProgressBar) findViewById(R.id.trailer_loading_indicator);
         mReviewLoadingIndicator = (ProgressBar) findViewById(R.id.review_loading_indicator);
@@ -184,9 +190,16 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         Bundle bundleForLoader = new Bundle();
         bundleForLoader.putString("preferences", id);
 
-        //Load Trailers
+//        final android.content.Loader loader = getLoaderManager().getLoader(TRAILERS_LOADER_ID);
+//        if (loader != null && loader.isReset()) {
+//            loadTrailers(bundleForLoader,true);
+//            loadReviews(bundleForLoader,true);
+//        } else {
+//            loadTrailers(bundleForLoader,false);
+//            loadReviews(bundleForLoader,false);
+//        }
+
         loadTrailers(bundleForLoader);
-        //Load Reviews
         loadReviews(bundleForLoader);
     }
 
@@ -260,8 +273,18 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             protected void onStartLoading() {
                 //if there is no connection, don't even start loading
                 if (isOnline()) {
-                    showProgressBars();
-                    forceLoad();
+                    Log.d("Auxiliar: ", Integer.toString(getId()) + " " + Integer.toString(trailerList.size()));
+
+                    if ((trailerList.isEmpty()) && (getId()==1)){
+                        Log.d("Auxiliar: ", "start loading");
+                        mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
+                        forceLoad();
+                    } else if((reviewList.isEmpty()) && (getId()==2)){
+                        Log.d("Auxiliar: ", "start loading");
+                        mReviewLoadingIndicator.setVisibility(View.VISIBLE);
+                        forceLoad();
+                    }
+
                 } else {
                     showNoConnection();
                 }
@@ -345,6 +368,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
     @Override
     public void onLoadFinished(Loader<Bundle> loader, Bundle loaderResult) {
+        Log.d("Auxiliar: ","finished loading");
         //get the id of the loader that finished
         int finishedLoaderId = loader.getId();
 
@@ -354,8 +378,24 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             ArrayList<String> trailerList = loaderResult.getStringArrayList("Trailer List");
             //mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (trailerList != null) {
-                //populate recycler view
-                mTrailerAdapter.setTrailerData(trailerList);
+
+                LinearLayout trailerListView = (LinearLayout) findViewById(R.id.trailerListView);
+                TrailerListAdapter mTrailerListAdapter = new TrailerListAdapter(getBaseContext(), trailerList);
+
+                //populate linear layout
+                for(int trailerPosition = 0; trailerPosition < trailerList.size(); trailerPosition++){
+                    View item = mTrailerListAdapter.getView(trailerPosition, null, null);
+
+                    item.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            playTrailer(v.getTag().toString());
+                        }
+                    });
+
+                    trailerListView.addView(item);
+                }
+
             } else {
                 showNoTrailers();
             }
@@ -377,6 +417,12 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     @Override
     public void onClick(String trailerClicked) {
         playTrailer(trailerClicked);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d("Auxiliar: ", "onResume");
+        super.onResume();
     }
 
     @Override
