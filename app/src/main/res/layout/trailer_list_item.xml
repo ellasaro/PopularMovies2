@@ -10,14 +10,14 @@
         android:id="@+id/ll_trailers_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="@dimen/fivedp_padding"
         android:orientation="horizontal">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="@dimen/fivedp_padding"
             android:src="@android:drawable/ic_media_play" />
 
         <TextView
@@ -25,13 +25,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Play Trailer #"
-            android:textSize="16sp" />
+            android:textSize="@dimen/trailer_item_text_size" />
 
         <TextView
             android:id="@+id/tv_trailer_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textSize="@dimen/trailer_item_text_size"
             tools:text="3" />
 
     </LinearLayout>

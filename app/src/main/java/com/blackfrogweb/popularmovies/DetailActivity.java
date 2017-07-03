@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -16,16 +15,11 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,10 +29,6 @@ import com.blackfrogweb.popularmovies.data.FavoritesDbHelper;
 import com.blackfrogweb.popularmovies.utilities.NetworkUtils;
 import com.blackfrogweb.popularmovies.utilities.OpenMoviesJsonUtils;
 import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,7 +38,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static java.security.AccessController.getContext;
+import static android.view.View.GONE;
 
 public class DetailActivity extends FragmentActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
                                                                 LoaderManager.LoaderCallbacks<Bundle> {
@@ -61,6 +51,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
     //loader variables
     private static final int TRAILERS_LOADER_ID = 1;
     private static final int REVIEWS_LOADER_ID = 2;
+    private Bundle bundleForLoader;
     int loaderId;
     ArrayList<String> trailerList = new ArrayList<String>();
     private MovieParcel passedMovie;
@@ -93,8 +84,6 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         setContentView(R.layout.activity_detail);
         ButterKnife.bind(this);
 
-        Log.d("Auxiliar: ", "onCreate");
-
         mTrailerLoadingIndicator = (ProgressBar) findViewById(R.id.trailer_loading_indicator);
         mReviewLoadingIndicator = (ProgressBar) findViewById(R.id.review_loading_indicator);
 
@@ -103,7 +92,11 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
         //get intent and movie object
         Intent intent = getIntent();
-        passedMovie = intent.getExtras().getParcelable("movie");
+        if(intent.hasExtra("movie")) passedMovie = intent.getExtras().getParcelable("movie");
+        else {
+            Toast.makeText(this, "This movie title can't be loaded right now.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         //get id of movie to make trailer and reviews request
         String id = passedMovie.getmId();
@@ -164,7 +157,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         movieInfo.getLayoutParams().height = params.MATCH_PARENT;
         movieInfo.setLayoutParams(params);
 
-        //Trailers Recyclerview
+        //--- Trailers RecyclerView
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_trailers);
 
         LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -173,8 +166,9 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
         mTrailerAdapter = new TrailerAdapter(this);
         mRecyclerView.setAdapter(mTrailerAdapter);
+        //--- End Trailers RecyclerView
 
-        //Reviews Recyclerview
+        //--- Reviews Recyclerview
         mrRecyclerView = (RecyclerView) findViewById(R.id.rv_reviews);
 
         LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -183,40 +177,33 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
         mReviewAdapter = new ReviewAdapter();
         mrRecyclerView.setAdapter(mReviewAdapter);
+        //--- End Reviews Recyclerview
 
-        //if we never loaded the trailer list for this movie, do it now
-        Log.d("Auxiliar: ", "no trailers available");
         //The second parameter of the initLoader method below is a Bundle
-        Bundle bundleForLoader = new Bundle();
+        bundleForLoader = new Bundle();
         bundleForLoader.putString("preferences", id);
 
-//        final android.content.Loader loader = getLoaderManager().getLoader(TRAILERS_LOADER_ID);
-//        if (loader != null && loader.isReset()) {
-//            loadTrailers(bundleForLoader,true);
-//            loadReviews(bundleForLoader,true);
-//        } else {
-//            loadTrailers(bundleForLoader,false);
-//            loadReviews(bundleForLoader,false);
-//        }
-
-        loadTrailers(bundleForLoader);
-        loadReviews(bundleForLoader);
+        //Load data
+        loadTrailers(bundleForLoader, false);
+        loadReviews(bundleForLoader, false);
     }
 
-    private void loadTrailers(Bundle bundleForLoader){
+    private void loadTrailers(Bundle bundleForLoader, boolean restart){
 
         loaderId = TRAILERS_LOADER_ID;
         //we've implemented the LoaderCallbacks interface with the type of String array
         LoaderManager.LoaderCallbacks<Bundle> callbackTrailers = DetailActivity.this;
         //Ensures a loader is initialized and active
-        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackTrailers);
+        if(!restart) getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackTrailers);
+        else getSupportLoaderManager().restartLoader(loaderId, bundleForLoader, callbackTrailers);
     }
 
-    private void loadReviews(Bundle bundleForLoader){
+    private void loadReviews(Bundle bundleForLoader, boolean restart){
         loaderId = REVIEWS_LOADER_ID;
         //we've implemented the LoaderCallbacks interface with the type of String array
         LoaderManager.LoaderCallbacks<Bundle> callbackReviews = DetailActivity.this;
-        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackReviews);
+        if(!restart) getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callbackReviews);
+        else getSupportLoaderManager().restartLoader(loaderId, bundleForLoader, callbackReviews);
     }
 
     private boolean isFavorite(String movieId) {
@@ -273,18 +260,15 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             protected void onStartLoading() {
                 //if there is no connection, don't even start loading
                 if (isOnline()) {
-                    Log.d("Auxiliar: ", Integer.toString(getId()) + " " + Integer.toString(trailerList.size()));
 
+                    //check if there is any previously stored data
                     if ((trailerList.isEmpty()) && (getId()==1)){
-                        Log.d("Auxiliar: ", "start loading");
                         mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
                         forceLoad();
                     } else if((reviewList.isEmpty()) && (getId()==2)){
-                        Log.d("Auxiliar: ", "start loading");
                         mReviewLoadingIndicator.setVisibility(View.VISIBLE);
                         forceLoad();
                     }
-
                 } else {
                     showNoConnection();
                 }
@@ -292,7 +276,6 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
             @Override
             public Bundle loadInBackground() {
-
                 if (getId() == TRAILERS_LOADER_ID) {
                     try {
                         //Build URL
@@ -310,8 +293,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                             //put the trailer String Array List into a bundle
                             result.putStringArrayList("Trailer List", trailerList);
                         } else {
-                            //if the list comes back empty, tell the user
-                            showNoTrailers();
+                            //put dummy data in because even though we loaded data successfully
+                            //there is no trailers available
+                            //however we need to set the data so we don't try load data again
+                            trailerList.add(0, "Dummy Data");
                         }
                         return result;
 
@@ -340,7 +325,11 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                                 reviewContentList.add(auxiliarList[1]);
                             }
                         } else {
-                            showNoReviews();
+                            //put dummy data in because even though we loaded data successfully
+                            //there is no reviews available
+                            //however we need to set the data so we don't try load data again
+                            String[] dummyData = {"Dummy Data", "Dummy Data"};
+                            reviewList.add(0, dummyData);
                         }
                         //put those arrays into a bundle and return it
                         result.putStringArrayList("Review Authors", reviewAuthorList);
@@ -368,15 +357,12 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
     @Override
     public void onLoadFinished(Loader<Bundle> loader, Bundle loaderResult) {
-        Log.d("Auxiliar: ","finished loading");
         //get the id of the loader that finished
         int finishedLoaderId = loader.getId();
 
-        hideProgressBars();
-
         if (finishedLoaderId == 1) {
+            mTrailerLoadingIndicator.setVisibility(GONE);
             ArrayList<String> trailerList = loaderResult.getStringArrayList("Trailer List");
-            //mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (trailerList != null) {
 
                 LinearLayout trailerListView = (LinearLayout) findViewById(R.id.trailerListView);
@@ -400,7 +386,10 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
                 showNoTrailers();
             }
         } else if (finishedLoaderId == 2) {
-            if (loaderResult != null) {
+            mReviewLoadingIndicator.setVisibility(GONE);
+            ArrayList<String> authorList = loaderResult.getStringArrayList("Review Authors");
+            ArrayList<String> contentList = loaderResult.getStringArrayList("Review Contents");
+            if (!authorList.isEmpty() && !contentList.isEmpty()) {
                 //populate recycler view
                 mReviewAdapter.setReviewData(loaderResult);
             } else {
@@ -421,7 +410,6 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
     @Override
     protected void onResume() {
-        Log.d("Auxiliar: ", "onResume");
         super.onResume();
     }
 
@@ -473,45 +461,34 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
 
     private void showTrailers(){
         mRecyclerView.setVisibility(View.VISIBLE);
-        mNoTrailers.setVisibility(View.GONE);
-        mNoInternetTrailers.setVisibility(View.GONE);
+        mNoTrailers.setVisibility(GONE);
+        mNoInternetTrailers.setVisibility(GONE);
     }
 
     private void showReviews(){
         mrRecyclerView.setVisibility(View.VISIBLE);
-        mNoReviews.setVisibility(View.GONE);
-        mNoInternetReviews.setVisibility(View.GONE);
+        mNoReviews.setVisibility(GONE);
+        mNoInternetReviews.setVisibility(GONE);
     }
 
     private void showNoTrailers(){
-        mRecyclerView.setVisibility(View.GONE);
+        mRecyclerView.setVisibility(GONE);
         mNoTrailers.setVisibility(View.VISIBLE);
-        mNoInternetTrailers.setVisibility(View.GONE);
+        mNoInternetTrailers.setVisibility(GONE);
     }
 
     private void showNoReviews(){
-        mrRecyclerView.setVisibility(View.GONE);
+        mrRecyclerView.setVisibility(GONE);
         mNoReviews.setVisibility(View.VISIBLE);
-        mNoInternetReviews.setVisibility(View.GONE);
+        mNoInternetReviews.setVisibility(GONE);
     }
 
     private void showNoConnection(){
-        mRecyclerView.setVisibility(View.GONE);
-        mrRecyclerView.setVisibility(View.GONE);
-        mNoTrailers.setVisibility(View.GONE);
-        mNoReviews.setVisibility(View.GONE);
+        mRecyclerView.setVisibility(GONE);
+        mrRecyclerView.setVisibility(GONE);
+        mNoTrailers.setVisibility(GONE);
+        mNoReviews.setVisibility(GONE);
         mNoInternetReviews.setVisibility(View.VISIBLE);
         mNoInternetTrailers.setVisibility(View.VISIBLE);
     }
-
-    private void showProgressBars(){
-        mReviewLoadingIndicator.setVisibility(View.VISIBLE);
-        mTrailerLoadingIndicator.setVisibility(View.VISIBLE);
-    }
-
-    private void hideProgressBars(){
-        mReviewLoadingIndicator.setVisibility(View.GONE);
-        mTrailerLoadingIndicator.setVisibility(View.GONE);
-    }
-
 }

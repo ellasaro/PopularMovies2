@@ -2,4 +2,40 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="reviews_container_height">200dp</dimen>
+    <dimen name="relative_layout_padding">10dp</dimen>
+
+    <dimen name="star_padding">8dp</dimen>
+    <dimen name="star_top_padding">9dp</dimen>
+
+    <dimen name="tendp_padding">10dp</dimen>
+    <dimen name="fivedp_padding">5dp</dimen>
+
+    <dimen name="no_trailer_message_topMargin">5dp</dimen>
+    <dimen name="no_review_message_topMargin">5dp</dimen>
+    <dimen name="no_internet_message_topMargin">5dp</dimen>
+
+    <dimen name="plot_padding">5dp</dimen>
+    <dimen name="trailers_title_padding">15dp</dimen>
+    <dimen name="reviews_title_padding">15dp</dimen>
+
+    <dimen name="trailers_title_padding_landscape">10dp</dimen>
+    <dimen name="reviews_title_padding_landscape">10dp</dimen>
+    <dimen name="release_date_padding_landscape">10dp</dimen>
+    <dimen name="score_padding_landscape">10dp</dimen>
+
+    <dimen name="title_text_size">20sp</dimen>
+    <dimen name="trailer_item_text_size">16sp</dimen>
+    <dimen name="no_internet_text_size">16sp</dimen>
+    <dimen name="review_item_text_size">14sp</dimen>
+
+    <dimen name="no_trailers_text_size">16sp</dimen>
+    <dimen name="no_reviews_text_size">16sp</dimen>
+
+    <dimen name="poster_height">40dp</dimen>
+    <dimen name="poster_width">40dp</dimen>
+
+    <dimen name="separator_marginSide_landscape">10dp</dimen>
+
+    <dimen name="button_marginTop_landscape">10dp</dimen>
 </resources>

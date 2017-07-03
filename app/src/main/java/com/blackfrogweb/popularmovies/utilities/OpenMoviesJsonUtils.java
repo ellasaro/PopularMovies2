@@ -112,8 +112,6 @@ public final class OpenMoviesJsonUtils {
         if(length > 3)
             length = 3;
 
-        Log.d("Auxiliar:", "Retrieved " + length + " trailers");
-
         ArrayList<String> trailerList = new ArrayList<>();
 
         for (int i = 0; i < length; i++) {
@@ -126,7 +124,6 @@ public final class OpenMoviesJsonUtils {
             String FINAL_URL = BASE_YOUTUBE_URL + videoId;
 
             trailerList.add(FINAL_URL);
-            Log.d("Auxiliar", FINAL_URL);
         }
 
         return trailerList;

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -42,6 +43,8 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
     private RecyclerView mRecyclerView;
     private MoviesAdapter mMoviesAdapter;
+    GridLayoutManager mLayoutManager;
+    Parcelable mListState;
     private TextView mErrorMessage;
     private String sortPreference;
     private ArrayList<MovieParcel> movieList;
@@ -50,6 +53,8 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
     //Loader ID
     private static final int LIST_LOADER_ID = 0;
+
+    private static final String LIST_STATE_KEY = "list_state";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +74,9 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             spanCount = 4;
         }
 
-        GridLayoutManager layoutManager = new GridLayoutManager (this, spanCount);
+        mLayoutManager = new GridLayoutManager (this, spanCount);
 
-        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true);
         mMoviesAdapter = new MoviesAdapter(this);
 
@@ -95,10 +100,8 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             @Override
             protected void onStartLoading() {
                 if (movieList != null) {
-                    Log.d("Auxiliar: ", "we have a list we can use");
                     deliverResult(movieList);
                 } else {
-                    Log.d("Auxiliar: ", "we need to load a new list");
                     mLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
@@ -109,9 +112,6 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
 
                 if(isOnline()) {
                     try {
-                        Log.d("Auxiliar: ", "We are online.");
-                        Log.d("Auxiliar: ", "preferences inside loader " + sortPreferences);
-
                         String jsonMovieResponse = NetworkUtils
                                 .getResponseFromHttpUrl(movieRequestUrl);
 
@@ -122,7 +122,6 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
                         return movieList;
 
                     } catch (Exception e) {
-                        Log.d("Auxiliar", "Oops!");
                         e.printStackTrace();
                         return null;
                     }
@@ -251,7 +250,6 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
     }
 
     private void loadMovies(Bundle bundle){
-        Log.d("Auxiliar: ", "loadMovies");
         //LOADER MANAGER
         // This ID will uniquely identify the Loader.
         final int loaderId = LIST_LOADER_ID;
@@ -272,13 +270,10 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             //Load Movies
             //Ensures a loader is initialized and active
             getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
-        }
-        else {
+        } else {
             sortPreference = bundle.getString("preferences");
-            Log.d("Auxiliar: ", "current preference is " + sortPreference);
 
             if(movieList == null){
-                Log.d("Auxiliar: ", "movie list is null");
                 showDataView();
                 bundleForLoader.putString("preferences", sortPreference);
                 getSupportLoaderManager().restartLoader(loaderId, bundleForLoader, callback);
@@ -289,13 +284,33 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mListState != null) {
+            mLayoutManager.onRestoreInstanceState(mListState);
+        }
+    }
+
     //Save state
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList("movies", movieList);
-        //haven't really used it but it doesn't hurt to have it
-        outState.putString("preferences", sortPreference);
         super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList("movies", movieList);
+        outState.putString("preferences", sortPreference);
+
+        mListState = mLayoutManager.onSaveInstanceState();
+        outState.putParcelable(LIST_STATE_KEY, mListState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+
+        if((state!=null) && state.containsKey(LIST_STATE_KEY))
+            mListState = state.getParcelable(LIST_STATE_KEY);
     }
 
     //Check for internet connection

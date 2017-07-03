@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerAdapterViewHolder> {
 
     private ArrayList<String> mTrailerData;
-    private int dataSize;
     private final TrailerAdapterOnClickHandler mClickHandler;
 
     public interface TrailerAdapterOnClickHandler {

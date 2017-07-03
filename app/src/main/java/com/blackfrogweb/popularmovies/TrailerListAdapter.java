@@ -21,17 +21,10 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
-
-// Custom adapter class that displays a list of Android-Me images in a GridView
 public class TrailerListAdapter {
 
     // Keeps track of the context and list of images to display

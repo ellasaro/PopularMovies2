@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/review_item_text_size"
             tools:text="Author" />
 
         <TextView
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:textSize="14sp"
+            android:textSize="@dimen/review_item_text_size"
             tools:text="This would be the review content" />
 
         <View
