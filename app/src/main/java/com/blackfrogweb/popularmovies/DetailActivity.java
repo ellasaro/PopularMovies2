@@ -110,7 +110,7 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
             @Override
             public void onClick(View v) {
                 if (!mStatus) {
-                    if (addFavorite(passedMovie) == -1) {
+                    if (addFavorite(passedMovie) == null) {
                         Toast.makeText(DetailActivity.this, "Something went wrong. Try again later.", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(DetailActivity.this, "Movie added to Favorites.", Toast.LENGTH_SHORT).show();
@@ -225,7 +225,8 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         return status;
     }
 
-    private long addFavorite(MovieParcel currentMovie) {
+    private Uri addFavorite(MovieParcel currentMovie) {
+
         ContentValues cv = new ContentValues();
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_API_ID, currentMovie.getmId());
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_TITLE, currentMovie.getmTitle());
@@ -234,11 +235,12 @@ public class DetailActivity extends FragmentActivity implements TrailerAdapter.T
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_PLOT, currentMovie.getmPlot());
         cv.put(FavoritesContract.FavoritesEntry.COLUMN_POSTER_PATH, currentMovie.getmPoster());
 
-        return mDb.insert(FavoritesContract.FavoritesEntry.TABLE_NAME, null, cv);
+        Uri uri = getContentResolver().insert(FavoritesContract.FavoritesEntry.CONTENT_URI, cv);
+        return uri;
     }
 
     private boolean removeFavorite(MovieParcel currentMovie) {
-        return mDb.delete(FavoritesContract.FavoritesEntry.TABLE_NAME,
+        return getContentResolver().delete(FavoritesContract.FavoritesEntry.CONTENT_URI,
                 FavoritesContract.FavoritesEntry.COLUMN_API_ID + "=" + currentMovie.getmId(), null) > 0;
     }
 

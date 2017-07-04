@@ -52,7 +52,7 @@
                             android:background="@drawable/green_button"
                             android:text="@string/add_to_favorites"
                             android:textAppearance="@style/ButtonText"
-                            android:textSize="16sp" />
+                            android:textSize="@dimen/add_remove_button_text_size" />
 
                     </LinearLayout>
 

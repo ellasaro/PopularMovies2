@@ -13,7 +13,7 @@ public class FavoritesContract {
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    public static final String PATH_MOVIES = "movies";
+    public static final String PATH_MOVIES = "favorites";
 
     public static final class FavoritesEntry implements BaseColumns {
 
@@ -35,9 +35,9 @@ public class FavoritesContract {
 
         public static final String COLUMN_POSTER_PATH = "poster";
 
-        public static Uri buildWeatherUriWithDate(long date) {
+        public static Uri buildFavoriteUriWithId(String api_id) {
             return CONTENT_URI.buildUpon()
-                    .appendPath(Long.toString(date))
+                    .appendPath(api_id)
                     .build();
         }
 

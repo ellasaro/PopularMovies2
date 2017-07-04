@@ -12,12 +12,14 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,9 +46,9 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
     private RecyclerView mRecyclerView;
     private MoviesAdapter mMoviesAdapter;
     GridLayoutManager mLayoutManager;
-    Parcelable mListState;
     private TextView mErrorMessage;
     private String sortPreference;
+    private int mScrollPosition;
     private ArrayList<MovieParcel> movieList;
 
     private ProgressBar mLoadingIndicator;
@@ -54,7 +56,9 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
     //Loader ID
     private static final int LIST_LOADER_ID = 0;
 
-    private static final String LIST_STATE_KEY = "list_state";
+    private static final String LIST_POSITION_KEY = "savedPosition";
+    private static final String MOVIE_LIST_KEY = "movies";
+    private static final String PREFERENCES_KEY = "preferences";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +96,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
         return new AsyncTaskLoader<ArrayList<MovieParcel>>(this) {
 
             //get the sorting preferences
-            String sortPreferences = args.getString("preferences");
+            String sortPreferences = args.getString(PREFERENCES_KEY);
 
             //Build URL requesting movie list
             URL movieRequestUrl = NetworkUtils.buildUrl(sortPreferences, "list");
@@ -125,9 +129,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
                         e.printStackTrace();
                         return null;
                     }
-                } else {
-                    return null;
-                }
+                } else return null;
             }
 
             public void deliverResult(ArrayList<MovieParcel> data) {
@@ -220,7 +222,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
                     movieList = null;
 
                     Bundle preferenceBundle = new Bundle();
-                    preferenceBundle.putString("preferences", sortPreference);
+                    preferenceBundle.putString(PREFERENCES_KEY, sortPreference);
 
                     loadMovies(preferenceBundle);
                 }
@@ -236,7 +238,7 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             alertDialog.show();
         } else if(id == R.id.refresh){
             Bundle refreshBundle = new Bundle();
-            refreshBundle.putString("preferences", sortPreference);
+            refreshBundle.putString(PREFERENCES_KEY, sortPreference);
             //clear the movie list
             movieList = null;
             loadMovies(refreshBundle);
@@ -266,20 +268,23 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
             showDataView();
 
             //Put the sorting preference into the bundle
-            bundleForLoader.putString("preferences", sortPreference);
+            bundleForLoader.putString(PREFERENCES_KEY, sortPreference);
             //Load Movies
             //Ensures a loader is initialized and active
             getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
         } else {
-            sortPreference = bundle.getString("preferences");
+            sortPreference = bundle.getString(PREFERENCES_KEY);
+            mScrollPosition = bundle.getInt(LIST_POSITION_KEY);
+            movieList = bundle.getParcelableArrayList(MOVIE_LIST_KEY);
 
             if(movieList == null){
                 showDataView();
                 bundleForLoader.putString("preferences", sortPreference);
                 getSupportLoaderManager().restartLoader(loaderId, bundleForLoader, callback);
             } else {
-                movieList = bundle.getParcelableArrayList("movies");
+                movieList = bundle.getParcelableArrayList(MOVIE_LIST_KEY);
                 mMoviesAdapter.setMoviesData(movieList);
+                mRecyclerView.getLayoutManager().scrollToPosition(mScrollPosition);
             }
         }
     }
@@ -287,10 +292,6 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (mListState != null) {
-            mLayoutManager.onRestoreInstanceState(mListState);
-        }
     }
 
     //Save state
@@ -298,19 +299,20 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("movies", movieList);
-        outState.putString("preferences", sortPreference);
+        outState.putParcelableArrayList(MOVIE_LIST_KEY, movieList);
+        outState.putString(PREFERENCES_KEY, sortPreference);
 
-        mListState = mLayoutManager.onSaveInstanceState();
-        outState.putParcelable(LIST_STATE_KEY, mListState);
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+        if(layoutManager != null && layoutManager instanceof GridLayoutManager){
+            mScrollPosition = ((GridLayoutManager) layoutManager).findFirstVisibleItemPosition();
+        }
+
+        outState.putInt(LIST_POSITION_KEY, mScrollPosition);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
-
-        if((state!=null) && state.containsKey(LIST_STATE_KEY))
-            mListState = state.getParcelable(LIST_STATE_KEY);
     }
 
     //Check for internet connection
@@ -320,5 +322,4 @@ public class MainActivity extends FragmentActivity implements MoviesAdapterOnCli
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
-
 }

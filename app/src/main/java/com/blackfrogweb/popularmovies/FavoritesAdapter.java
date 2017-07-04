@@ -83,11 +83,29 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
 
     @Override
     public int getItemCount() {
+        if (mCursor == null) {
+            return 0;
+        }
         return mCursor.getCount();
     }
 
-    public void setFavoritesData(ArrayList<MovieParcel> favList) {
-        mMoviesData = favList;
+    public void setFavoritesData(Cursor newCursor) {
+        mCursor = newCursor;
         notifyDataSetChanged();
+    }
+
+    public Cursor swapCursor(Cursor c) {
+        // check if this cursor is the same as the previous cursor (mCursor)
+        if (mCursor == c) {
+            return null; // bc nothing has changed
+        }
+        Cursor temp = mCursor;
+        this.mCursor = c; // new cursor value assigned
+
+        //check if this is a valid cursor, then update the cursor
+        if (c != null) {
+            this.notifyDataSetChanged();
+        }
+        return temp;
     }
 }

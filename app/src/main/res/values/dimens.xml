@@ -28,6 +28,7 @@
     <dimen name="trailer_item_text_size">16sp</dimen>
     <dimen name="no_internet_text_size">16sp</dimen>
     <dimen name="review_item_text_size">14sp</dimen>
+    <dimen name="add_remove_button_text_size">16sp</dimen>
 
     <dimen name="no_trailers_text_size">16sp</dimen>
     <dimen name="no_reviews_text_size">16sp</dimen>
